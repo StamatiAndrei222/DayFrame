@@ -1,5 +1,10 @@
 export type TaskPriority = "low" | "medium" | "high";
 
+export type TaskTimeEntry = {
+  date: string;
+  seconds: number;
+};
+
 export type Task = {
   id: string;
   title: string;
@@ -7,5 +12,7 @@ export type Task = {
   priority: TaskPriority;
   deadline?: string;
   completed: boolean;
+  completedAt?: string;
+  timeEntries: TaskTimeEntry[];
   createdAt: string;
 };

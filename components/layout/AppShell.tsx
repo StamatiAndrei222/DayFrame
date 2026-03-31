@@ -1,8 +1,11 @@
 import { AISuggestionsPanel } from "@/components/ai/AISuggestionsPanel";
 import { SectionCard } from "@/components/dashboard/SectionCard";
+import type { DailyHistory } from "@/hooks/useTasks";
 import { TodayPlan } from "@/components/planner/TodayPlan";
 import { AddTaskForm } from "@/components/tasks/AddTaskForm";
 import { TaskList } from "@/components/tasks/TaskList";
+import { TimeHistoryCalendar } from "@/components/tracking/TimeHistoryCalendar";
+import { formatDuration } from "@/lib/time";
 import type { Task } from "@/types/task";
 import type { TaskPriority } from "@/types/task";
 
@@ -26,12 +29,19 @@ type AppShellProps = {
       deadline?: string;
     },
   ) => void;
+  activeTimerTaskId: string | null;
+  onStartTaskTimer: (taskId: string) => void;
+  onPauseTaskTimer: () => void;
+  getTaskTodaySeconds: (taskId: string) => number;
+  getTaskTotalSeconds: (taskId: string) => number;
+  dailyHistory: DailyHistory[];
   stats: {
     total: number;
     completed: number;
     pending: number;
     highPriority: number;
     dueToday: number;
+    trackedTodaySeconds: number;
   };
 };
 
@@ -43,6 +53,12 @@ export function AppShell({
   onToggleTaskCompletion,
   onDeleteTask,
   onUpdateTask,
+  activeTimerTaskId,
+  onStartTaskTimer,
+  onPauseTaskTimer,
+  getTaskTodaySeconds,
+  getTaskTotalSeconds,
+  dailyHistory,
 }: AppShellProps) {
   return (
     <div className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col px-5 py-8 sm:px-8 sm:py-12 lg:px-12 lg:py-16">
@@ -65,6 +81,9 @@ export function AppShell({
           </p>
           <p className="rounded-full border border-[--card-border] bg-[--card] px-3 py-1 text-xs text-[--text-secondary]">
             {stats.total} tasks total
+          </p>
+          <p className="rounded-full border border-[--card-border] bg-[--card] px-3 py-1 text-xs text-[--text-secondary]">
+            Tracked today: {formatDuration(stats.trackedTodaySeconds)}
           </p>
         </div>
       </header>
@@ -90,6 +109,11 @@ export function AppShell({
             onToggleComplete={onToggleTaskCompletion}
             onDelete={onDeleteTask}
             onUpdate={onUpdateTask}
+            activeTimerTaskId={activeTimerTaskId}
+            getTaskTodaySeconds={getTaskTodaySeconds}
+            getTaskTotalSeconds={getTaskTotalSeconds}
+            onStartTimer={onStartTaskTimer}
+            onPauseTimer={onPauseTaskTimer}
           />
         </SectionCard>
 
@@ -117,6 +141,15 @@ export function AppShell({
           className="[--card-delay:270ms]"
         >
           <AISuggestionsPanel tasks={tasks} />
+        </SectionCard>
+
+        <SectionCard
+          title="Daily History"
+          eyebrow="Calendar"
+          description="Review the last 7 days: completed tasks and time tracked on each item."
+          className="md:col-span-2 [--card-delay:330ms]"
+        >
+          <TimeHistoryCalendar history={dailyHistory} />
         </SectionCard>
       </main>
 

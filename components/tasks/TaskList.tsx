@@ -14,9 +14,24 @@ type TaskListProps = {
       deadline?: string;
     },
   ) => void;
+  activeTimerTaskId: string | null;
+  getTaskTodaySeconds: (taskId: string) => number;
+  getTaskTotalSeconds: (taskId: string) => number;
+  onStartTimer: (taskId: string) => void;
+  onPauseTimer: () => void;
 };
 
-export function TaskList({ tasks, onToggleComplete, onDelete, onUpdate }: TaskListProps) {
+export function TaskList({
+  tasks,
+  onToggleComplete,
+  onDelete,
+  onUpdate,
+  activeTimerTaskId,
+  getTaskTodaySeconds,
+  getTaskTotalSeconds,
+  onStartTimer,
+  onPauseTimer,
+}: TaskListProps) {
   if (tasks.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-[--card-border] bg-white/60 px-4 py-6 text-center">
@@ -37,6 +52,11 @@ export function TaskList({ tasks, onToggleComplete, onDelete, onUpdate }: TaskLi
           onToggleComplete={onToggleComplete}
           onDelete={onDelete}
           onUpdate={onUpdate}
+          isTimerRunning={activeTimerTaskId === task.id}
+          trackedTodaySeconds={getTaskTodaySeconds(task.id)}
+          trackedTotalSeconds={getTaskTotalSeconds(task.id)}
+          onStartTimer={onStartTimer}
+          onPauseTimer={onPauseTimer}
         />
       ))}
     </ul>

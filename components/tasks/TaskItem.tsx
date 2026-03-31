@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { formatDuration } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import type { Task, TaskPriority } from "@/types/task";
 
@@ -21,6 +22,11 @@ type TaskItemProps = {
       deadline?: string;
     },
   ) => void;
+  isTimerRunning: boolean;
+  trackedTodaySeconds: number;
+  trackedTotalSeconds: number;
+  onStartTimer: (taskId: string) => void;
+  onPauseTimer: () => void;
 };
 
 const priorityStyles: Record<TaskPriority, string> = {
@@ -29,7 +35,17 @@ const priorityStyles: Record<TaskPriority, string> = {
   low: "bg-slate-100 text-slate-700",
 };
 
-export function TaskItem({ task, onToggleComplete, onDelete, onUpdate }: TaskItemProps) {
+export function TaskItem({
+  task,
+  onToggleComplete,
+  onDelete,
+  onUpdate,
+  isTimerRunning,
+  trackedTodaySeconds,
+  trackedTotalSeconds,
+  onStartTimer,
+  onPauseTimer,
+}: TaskItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(task.title);
   const [notes, setNotes] = useState(task.notes ?? "");
@@ -146,8 +162,40 @@ export function TaskItem({ task, onToggleComplete, onDelete, onUpdate }: TaskIte
                 {task.completed ? "Completed" : "Pending"}
               </span>
             </span>
+            <span className="h-1 w-1 rounded-full bg-slate-300" />
+            <span>
+              Today:{" "}
+              <span className="font-medium text-[--text-primary]">
+                {formatDuration(trackedTodaySeconds)}
+              </span>
+            </span>
+            <span className="h-1 w-1 rounded-full bg-slate-300" />
+            <span>
+              Total:{" "}
+              <span className="font-medium text-[--text-primary]">
+                {formatDuration(trackedTotalSeconds)}
+              </span>
+            </span>
           </div>
           <div className="flex flex-wrap gap-2">
+            {isTimerRunning ? (
+              <Button
+                className="bg-sky-600 hover:bg-sky-500"
+                onClick={onPauseTimer}
+                aria-label={`Pause timer for ${task.title}`}
+              >
+                Pause Timer
+              </Button>
+            ) : (
+              <Button
+                className="bg-sky-600 hover:bg-sky-500 disabled:cursor-not-allowed disabled:bg-slate-300"
+                onClick={() => onStartTimer(task.id)}
+                disabled={task.completed}
+                aria-label={`Start timer for ${task.title}`}
+              >
+                Start Task
+              </Button>
+            )}
             <Button
               className="bg-slate-100 text-slate-800 hover:bg-slate-200"
               onClick={() => onToggleComplete(task.id)}

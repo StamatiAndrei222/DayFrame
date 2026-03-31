@@ -2,6 +2,19 @@ import type { Task } from "@/types/task";
 
 export const TASKS_STORAGE_KEY = "dayframe.tasks.v1";
 
+function isTimeEntries(value: unknown): value is Task["timeEntries"] {
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (entry) =>
+        entry &&
+        typeof entry === "object" &&
+        typeof (entry as { date?: unknown }).date === "string" &&
+        typeof (entry as { seconds?: unknown }).seconds === "number",
+    )
+  );
+}
+
 function isTaskRecord(value: unknown): value is Task {
   if (!value || typeof value !== "object") {
     return false;
@@ -18,6 +31,8 @@ function isTaskRecord(value: unknown): value is Task {
       candidate.priority === "high") &&
     (candidate.deadline === undefined || typeof candidate.deadline === "string") &&
     typeof candidate.completed === "boolean" &&
+    (candidate.completedAt === undefined || typeof candidate.completedAt === "string") &&
+    (candidate.timeEntries === undefined || isTimeEntries(candidate.timeEntries)) &&
     typeof candidate.createdAt === "string"
   );
 }
@@ -70,6 +85,7 @@ export function createSeedTasks(): Task[] {
       priority: "high",
       deadline: formatDate(new Date(now.getTime() + oneDayMs)),
       completed: false,
+      timeEntries: [],
       createdAt: now.toISOString(),
     },
     {
@@ -79,6 +95,7 @@ export function createSeedTasks(): Task[] {
       priority: "medium",
       deadline: formatDate(new Date(now.getTime() + 2 * oneDayMs)),
       completed: false,
+      timeEntries: [],
       createdAt: now.toISOString(),
     },
     {
@@ -88,6 +105,7 @@ export function createSeedTasks(): Task[] {
       priority: "high",
       deadline: formatDate(now),
       completed: false,
+      timeEntries: [],
       createdAt: now.toISOString(),
     },
   ];
