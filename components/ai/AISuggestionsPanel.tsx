@@ -23,9 +23,14 @@ export function AISuggestionsPanel({ tasks }: AISuggestionsPanelProps) {
     [submittedPrompt, tasks],
   );
 
+  const handleGenerate = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSubmittedPrompt(prompt.trim() || DEFAULT_PROMPT);
+  };
+
   return (
     <div className="space-y-3">
-      <div className="space-y-2">
+      <form className="space-y-2" onSubmit={handleGenerate}>
         <label className="text-xs font-medium uppercase tracking-wide text-[--muted]" htmlFor="ai-prompt">
           Describe your messy goals
         </label>
@@ -35,10 +40,10 @@ export function AISuggestionsPanel({ tasks }: AISuggestionsPanelProps) {
           onChange={(event) => setPrompt(event.target.value)}
           placeholder="Type a rough list of goals..."
         />
-        <Button className="w-full sm:w-auto" onClick={() => setSubmittedPrompt(prompt.trim() || DEFAULT_PROMPT)}>
+        <Button className="w-full sm:w-auto" type="submit">
           Generate Suggestions
         </Button>
-      </div>
+      </form>
 
       <div className="space-y-2">
         {cards.map((card) => (

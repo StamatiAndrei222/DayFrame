@@ -151,13 +151,22 @@ export function TaskItem({ task, onToggleComplete, onDelete, onUpdate }: TaskIte
             <Button
               className="bg-slate-100 text-slate-800 hover:bg-slate-200"
               onClick={() => onToggleComplete(task.id)}
+              aria-label={task.completed ? `Mark ${task.title} as pending` : `Mark ${task.title} as done`}
             >
               {task.completed ? "Mark Pending" : "Mark Done"}
             </Button>
-            <Button className="bg-slate-100 text-slate-800 hover:bg-slate-200" onClick={() => setIsEditing(true)}>
+            <Button
+              className="bg-slate-100 text-slate-800 hover:bg-slate-200"
+              onClick={() => setIsEditing(true)}
+              aria-label={`Edit ${task.title}`}
+            >
               Edit
             </Button>
-            <Button className="bg-rose-600 hover:bg-rose-500" onClick={() => onDelete(task.id)}>
+            <Button
+              className="bg-rose-600 hover:bg-rose-500"
+              onClick={() => onDelete(task.id)}
+              aria-label={`Delete ${task.title}`}
+            >
               Delete
             </Button>
           </div>

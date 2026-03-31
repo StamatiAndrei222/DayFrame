@@ -73,7 +73,7 @@ export function AppShell({
         <SectionCard
           title="Add Task"
           eyebrow="Capture"
-          description="Task capture flow lands in Phase 3 with title, priority, notes, and deadline inputs."
+          description="Capture tasks with title, optional notes, priority level, and deadline in one clean flow."
         >
           <AddTaskForm onAddTask={onAddTask} />
         </SectionCard>
@@ -115,6 +115,10 @@ export function AppShell({
           <AISuggestionsPanel tasks={tasks} />
         </SectionCard>
       </main>
+
+      <footer className="mt-8 border-t border-[--card-border] pt-4 text-xs text-[--text-secondary]">
+        Dayframe is local-first for MVP reliability. AI suggestions are deterministic mock logic for portfolio demo.
+      </footer>
     </div>
   );
 }
