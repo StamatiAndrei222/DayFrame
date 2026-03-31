@@ -18,6 +18,9 @@ export default function Home() {
     getTaskTodaySeconds,
     getTaskTotalSeconds,
     dailyHistory,
+    focusTask,
+    focusTaskTodaySeconds,
+    focusProgress,
   } = useTasks();
 
   return (
@@ -35,6 +38,9 @@ export default function Home() {
       getTaskTodaySeconds={getTaskTodaySeconds}
       getTaskTotalSeconds={getTaskTotalSeconds}
       dailyHistory={dailyHistory}
+      focusTask={focusTask}
+      focusTaskTodaySeconds={focusTaskTodaySeconds}
+      focusProgress={focusProgress}
     />
   );
 }

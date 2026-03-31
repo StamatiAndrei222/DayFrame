@@ -34,6 +34,12 @@ export type DailyHistory = {
   records: DailyTaskRecord[];
 };
 
+export type FocusProgress = {
+  startedToday: number;
+  completedToday: number;
+  percent: number;
+};
+
 type UseTasksResult = {
   tasks: Task[];
   isHydrated: boolean;
@@ -56,6 +62,9 @@ type UseTasksResult = {
   getTaskTodaySeconds: (taskId: string) => number;
   getTaskTotalSeconds: (taskId: string) => number;
   dailyHistory: DailyHistory[];
+  focusTask: Task | null;
+  focusTaskTodaySeconds: number;
+  focusProgress: FocusProgress;
 };
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
@@ -328,6 +337,46 @@ export function useTasks(): UseTasksResult {
     [tasks],
   );
 
+  const focusTask = useMemo(() => {
+    if (!activeTimer) {
+      return null;
+    }
+    return tasks.find((task) => task.id === activeTimer.taskId) ?? null;
+  }, [tasks, activeTimer]);
+
+  const focusTaskTodaySeconds = useMemo(() => {
+    if (!focusTask) {
+      return 0;
+    }
+    return taskTodaySecondsMap.get(focusTask.id) ?? 0;
+  }, [focusTask, taskTodaySecondsMap]);
+
+  const focusProgress = useMemo<FocusProgress>(() => {
+    const startedIds = new Set<string>();
+
+    tasks.forEach((task) => {
+      if (task.timeEntries.some((entry) => entry.date === todayKey)) {
+        startedIds.add(task.id);
+      }
+    });
+
+    if (activeTimer && dateKeyFromMs(activeTimer.startedAtMs) === todayKey) {
+      startedIds.add(activeTimer.taskId);
+    }
+
+    const startedToday = startedIds.size;
+    const completedToday = tasks.filter(
+      (task) => startedIds.has(task.id) && Boolean(task.completedAt?.startsWith(todayKey)),
+    ).length;
+    const percent = startedToday === 0 ? 0 : Math.round((completedToday / startedToday) * 100);
+
+    return {
+      startedToday,
+      completedToday,
+      percent,
+    };
+  }, [tasks, todayKey, activeTimer]);
+
   const dailyHistory = useMemo<DailyHistory[]>(() => {
     const allKnownDates = tasks.flatMap((task) => [
       task.createdAt.slice(0, 10),
@@ -418,5 +467,8 @@ export function useTasks(): UseTasksResult {
     getTaskTodaySeconds,
     getTaskTotalSeconds,
     dailyHistory,
+    focusTask,
+    focusTaskTodaySeconds,
+    focusProgress,
   };
 }

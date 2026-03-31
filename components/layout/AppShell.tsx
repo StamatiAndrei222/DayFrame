@@ -8,6 +8,7 @@ import { TimeHistoryCalendar } from "@/components/tracking/TimeHistoryCalendar";
 import { formatDuration } from "@/lib/time";
 import type { Task } from "@/types/task";
 import type { TaskCadence, TaskPriority } from "@/types/task";
+import type { FocusProgress } from "@/hooks/useTasks";
 
 type AppShellProps = {
   tasks: Task[];
@@ -37,6 +38,9 @@ type AppShellProps = {
   getTaskTodaySeconds: (taskId: string) => number;
   getTaskTotalSeconds: (taskId: string) => number;
   dailyHistory: DailyHistory[];
+  focusTask: Task | null;
+  focusTaskTodaySeconds: number;
+  focusProgress: FocusProgress;
   stats: {
     total: number;
     completed: number;
@@ -61,6 +65,9 @@ export function AppShell({
   getTaskTodaySeconds,
   getTaskTotalSeconds,
   dailyHistory,
+  focusTask,
+  focusTaskTodaySeconds,
+  focusProgress,
 }: AppShellProps) {
   return (
     <div className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col px-5 py-8 sm:px-8 sm:py-12 lg:px-12 lg:py-16">
@@ -122,18 +129,16 @@ export function AppShell({
         <SectionCard
           title="Today Plan"
           eyebrow="Focus"
-          description="Rule-based planning ranks pending tasks by priority and deadline so you can start immediately."
+          description="Shows only your currently running task and how much of today's started work is finished."
           className="[--card-delay:210ms]"
         >
-          <TodayPlan tasks={tasks} />
-          <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-            <p className="rounded-2xl border border-[--card-border] bg-white/70 px-3 py-2 text-[--text-secondary]">
-              Pending: <span className="font-semibold text-[--text-primary]">{stats.pending}</span>
-            </p>
-            <p className="rounded-2xl border border-[--card-border] bg-white/70 px-3 py-2 text-[--text-secondary]">
-              Due today: <span className="font-semibold text-[--text-primary]">{stats.dueToday}</span>
-            </p>
-          </div>
+          <TodayPlan
+            focusTask={focusTask}
+            focusTaskTodaySeconds={focusTaskTodaySeconds}
+            focusProgress={focusProgress}
+            onPauseTask={onPauseTaskTimer}
+            onCompleteTask={onToggleTaskCompletion}
+          />
         </SectionCard>
 
         <SectionCard
@@ -148,7 +153,7 @@ export function AppShell({
         <SectionCard
           title="Daily History"
           eyebrow="Calendar"
-          description="Review the last 7 days: completed tasks and time tracked on each item."
+          description="Visual chart for each day showing task-by-task time and completion."
           className="md:col-span-2 [--card-delay:330ms]"
         >
           <TimeHistoryCalendar history={dailyHistory} />
