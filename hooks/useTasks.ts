@@ -12,6 +12,8 @@ type AddTaskInput = {
   deadline?: string;
 };
 
+type UpdateTaskInput = Partial<AddTaskInput>;
+
 type UseTasksResult = {
   tasks: Task[];
   isHydrated: boolean;
@@ -24,6 +26,9 @@ type UseTasksResult = {
   };
   setTasks: Dispatch<SetStateAction<Task[]>>;
   addTask: (input: AddTaskInput) => void;
+  toggleTaskCompletion: (taskId: string) => void;
+  deleteTask: (taskId: string) => void;
+  updateTask: (taskId: string, input: UpdateTaskInput) => void;
 };
 
 const isDueToday = (deadline?: string) => {
@@ -75,6 +80,40 @@ export function useTasks(): UseTasksResult {
     setTasks((prevTasks) => [newTask, ...prevTasks]);
   }, []);
 
+  const toggleTaskCompletion = useCallback((taskId: string) => {
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === taskId ? { ...task, completed: !task.completed } : task,
+      ),
+    );
+  }, []);
+
+  const deleteTask = useCallback((taskId: string) => {
+    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+  }, []);
+
+  const updateTask = useCallback((taskId: string, input: UpdateTaskInput) => {
+    setTasks((prevTasks) =>
+      prevTasks.map((task) => {
+        if (task.id !== taskId) {
+          return task;
+        }
+
+        const nextTitle = input.title?.trim() ? input.title.trim() : task.title;
+        const nextNotes =
+          input.notes === undefined ? task.notes : input.notes.trim() ? input.notes.trim() : undefined;
+
+        return {
+          ...task,
+          title: nextTitle,
+          notes: nextNotes,
+          priority: input.priority ?? task.priority,
+          deadline: input.deadline !== undefined ? input.deadline || undefined : task.deadline,
+        };
+      }),
+    );
+  }, []);
+
   const stats = useMemo(() => {
     const completed = tasks.filter((task) => task.completed).length;
     const pending = tasks.length - completed;
@@ -100,5 +139,8 @@ export function useTasks(): UseTasksResult {
     stats,
     setTasks,
     addTask,
+    toggleTaskCompletion,
+    deleteTask,
+    updateTask,
   };
 }

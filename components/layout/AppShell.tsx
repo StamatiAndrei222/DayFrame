@@ -1,5 +1,6 @@
 import { SectionCard } from "@/components/dashboard/SectionCard";
 import { AddTaskForm } from "@/components/tasks/AddTaskForm";
+import { TaskList } from "@/components/tasks/TaskList";
 import type { Task } from "@/types/task";
 import type { TaskPriority } from "@/types/task";
 
@@ -12,6 +13,17 @@ type AppShellProps = {
     priority: TaskPriority;
     deadline?: string;
   }) => void;
+  onToggleTaskCompletion: (taskId: string) => void;
+  onDeleteTask: (taskId: string) => void;
+  onUpdateTask: (
+    taskId: string,
+    input: {
+      title?: string;
+      notes?: string;
+      priority?: TaskPriority;
+      deadline?: string;
+    },
+  ) => void;
   stats: {
     total: number;
     completed: number;
@@ -21,15 +33,15 @@ type AppShellProps = {
   };
 };
 
-const priorityStyles: Record<Task["priority"], string> = {
-  high: "bg-rose-100 text-rose-700",
-  medium: "bg-amber-100 text-amber-700",
-  low: "bg-slate-100 text-slate-700",
-};
-
-export function AppShell({ tasks, isHydrated, stats, onAddTask }: AppShellProps) {
-  const previewTasks = tasks.slice(0, 3);
-
+export function AppShell({
+  tasks,
+  isHydrated,
+  stats,
+  onAddTask,
+  onToggleTaskCompletion,
+  onDeleteTask,
+  onUpdateTask,
+}: AppShellProps) {
   return (
     <div className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col px-5 py-8 sm:px-8 sm:py-12 lg:px-12 lg:py-16">
       <header className="max-w-3xl space-y-5">
@@ -67,27 +79,14 @@ export function AppShell({ tasks, isHydrated, stats, onAddTask }: AppShellProps)
         <SectionCard
           title="Task List"
           eyebrow="Organize"
-          description="Persisted tasks preview from local storage to confirm reliable local-first data flow."
+          description="Manage your tasks with quick status updates, editing controls, and clean visual hierarchy."
         >
-          {previewTasks.length === 0 ? (
-            <p className="text-sm text-[--text-secondary]">No tasks yet.</p>
-          ) : (
-            <ul className="space-y-2">
-              {previewTasks.map((task) => (
-                <li
-                  key={task.id}
-                  className="flex items-center justify-between rounded-2xl border border-[--card-border] bg-white/70 px-3 py-2"
-                >
-                  <p className="pr-3 text-sm text-[--text-primary]">{task.title}</p>
-                  <span
-                    className={`rounded-full px-2 py-1 text-[11px] font-semibold uppercase tracking-wide ${priorityStyles[task.priority]}`}
-                  >
-                    {task.priority}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
+          <TaskList
+            tasks={tasks}
+            onToggleComplete={onToggleTaskCompletion}
+            onDelete={onDeleteTask}
+            onUpdate={onUpdateTask}
+          />
         </SectionCard>
 
         <SectionCard
