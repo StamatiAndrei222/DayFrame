@@ -46,7 +46,7 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <div className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col px-5 py-8 sm:px-8 sm:py-12 lg:px-12 lg:py-16">
-      <header className="max-w-3xl space-y-5">
+      <header className="max-w-3xl space-y-5 opacity-0 animate-[fade-up_520ms_var(--ease-standard)_forwards] motion-reduce:opacity-100 motion-reduce:animate-none">
         <p className="inline-flex items-center rounded-full border border-[--card-border] bg-[--card] px-3 py-1 text-xs font-medium tracking-wide text-[--muted] shadow-[var(--shadow-soft)]">
           Dayframe v1 • Local-first MVP
         </p>
@@ -74,6 +74,7 @@ export function AppShell({
           title="Add Task"
           eyebrow="Capture"
           description="Capture tasks with title, optional notes, priority level, and deadline in one clean flow."
+          className="[--card-delay:90ms]"
         >
           <AddTaskForm onAddTask={onAddTask} />
         </SectionCard>
@@ -82,6 +83,7 @@ export function AppShell({
           title="Task List"
           eyebrow="Organize"
           description="Manage your tasks with quick status updates, editing controls, and clean visual hierarchy."
+          className="[--card-delay:150ms]"
         >
           <TaskList
             tasks={tasks}
@@ -95,6 +97,7 @@ export function AppShell({
           title="Today Plan"
           eyebrow="Focus"
           description="Rule-based planning ranks pending tasks by priority and deadline so you can start immediately."
+          className="[--card-delay:210ms]"
         >
           <TodayPlan tasks={tasks} />
           <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
@@ -111,6 +114,7 @@ export function AppShell({
           title="AI Suggestions"
           eyebrow="Assist"
           description="Mock AI transforms rough goals into clearer actions, execution order, and focused next steps."
+          className="[--card-delay:270ms]"
         >
           <AISuggestionsPanel tasks={tasks} />
         </SectionCard>
