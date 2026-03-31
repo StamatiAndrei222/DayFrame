@@ -5,11 +5,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import type { TaskPriority } from "@/types/task";
+import type { TaskCadence, TaskPriority } from "@/types/task";
 
 type AddTaskInput = {
   title: string;
   notes?: string;
+  cadence: TaskCadence;
   priority: TaskPriority;
   deadline?: string;
 };
@@ -21,6 +22,7 @@ type AddTaskFormProps = {
 export function AddTaskForm({ onAddTask }: AddTaskFormProps) {
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
+  const [cadence, setCadence] = useState<TaskCadence>("daily");
   const [priority, setPriority] = useState<TaskPriority>("medium");
   const [deadline, setDeadline] = useState("");
   const [titleError, setTitleError] = useState<string | null>(null);
@@ -37,12 +39,14 @@ export function AddTaskForm({ onAddTask }: AddTaskFormProps) {
     onAddTask({
       title: normalizedTitle,
       notes: notes.trim() ? notes.trim() : undefined,
+      cadence,
       priority,
       deadline: deadline || undefined,
     });
 
     setTitle("");
     setNotes("");
+    setCadence("daily");
     setPriority("medium");
     setDeadline("");
     setTitleError(null);
@@ -82,6 +86,21 @@ export function AddTaskForm({ onAddTask }: AddTaskFormProps) {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1">
+          <label className="text-xs font-medium uppercase tracking-wide text-[--muted]" htmlFor="task-cadence">
+            Category
+          </label>
+          <Select
+            id="task-cadence"
+            value={cadence}
+            onChange={(event) => setCadence(event.target.value as TaskCadence)}
+          >
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </Select>
+        </div>
+
         <div className="space-y-1">
           <label className="text-xs font-medium uppercase tracking-wide text-[--muted]" htmlFor="task-priority">
             Priority

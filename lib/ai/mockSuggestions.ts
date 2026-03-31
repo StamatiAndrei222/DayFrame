@@ -1,8 +1,17 @@
 import type { Task } from "@/types/task";
+import type { TaskCadence, TaskPriority } from "@/types/task";
 
 export type SuggestionCard = {
   title: string;
   body: string;
+};
+
+export type SuggestedTaskDraft = {
+  title: string;
+  notes: string;
+  cadence: TaskCadence;
+  priority: TaskPriority;
+  deadline?: string;
 };
 
 const SPLIT_PATTERN = /[,.;]+|\band\b/gi;
@@ -127,4 +136,71 @@ export function generateSuggestionCards(input: string, tasks: Task[]): Suggestio
       body: prioritizeTasks(tasks).join(" "),
     },
   ];
+}
+
+function getTodayDate(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function addDays(date: string, days: number): string {
+  const value = new Date(`${date}T00:00:00`);
+  value.setDate(value.getDate() + days);
+  return value.toISOString().slice(0, 10);
+}
+
+function inferPriority(text: string): TaskPriority {
+  const lower = text.toLowerCase();
+  if (/(urgent|asap|today|deadline|apply|interview|job)/.test(lower)) {
+    return "high";
+  }
+  if (/(clean|update|refactor|organize)/.test(lower)) {
+    return "medium";
+  }
+  return "low";
+}
+
+function inferCadence(text: string): TaskCadence {
+  const lower = text.toLowerCase();
+  if (/(month|monthly|portfolio|roadmap)/.test(lower)) {
+    return "monthly";
+  }
+  if (/(week|weekly|github|cleanup|plan)/.test(lower)) {
+    return "weekly";
+  }
+  return "daily";
+}
+
+function inferDeadline(cadence: TaskCadence, priority: TaskPriority): string {
+  const today = getTodayDate();
+  if (priority === "high") {
+    return today;
+  }
+  if (cadence === "daily") {
+    return today;
+  }
+  if (cadence === "weekly") {
+    return addDays(today, 6);
+  }
+  return addDays(today, 29);
+}
+
+export function generateSuggestedTasks(input: string): SuggestedTaskDraft[] {
+  const phrases = toPhraseList(input);
+  if (phrases.length === 0) {
+    return [];
+  }
+
+  return phrases.map((phrase) => {
+    const cleanTitle = sentenceCase(phrase);
+    const cadence = inferCadence(cleanTitle);
+    const priority = inferPriority(cleanTitle);
+
+    return {
+      title: cleanTitle,
+      notes: "Generated from Assist AI prompt.",
+      cadence,
+      priority,
+      deadline: inferDeadline(cadence, priority),
+    };
+  });
 }

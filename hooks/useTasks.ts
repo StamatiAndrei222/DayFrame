@@ -3,11 +3,12 @@
 import { type Dispatch, type SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 
 import { createSeedTasks, loadTasks, saveTasks } from "@/lib/storage";
-import type { Task, TaskPriority } from "@/types/task";
+import type { Task, TaskCadence, TaskPriority } from "@/types/task";
 
 type AddTaskInput = {
   title: string;
   notes?: string;
+  cadence: TaskCadence;
   priority: TaskPriority;
   deadline?: string;
 };
@@ -96,6 +97,7 @@ const addSecondsToTask = (task: Task, date: string, seconds: number): Task => {
 
 const normalizeTask = (task: Task): Task => ({
   ...task,
+  cadence: task.cadence ?? "daily",
   timeEntries: Array.isArray(task.timeEntries) ? task.timeEntries : [],
 });
 
@@ -145,16 +147,21 @@ export function useTasks(): UseTasksResult {
       return `task-${Date.now()}`;
     };
 
+    const now = Date.now();
+    const fallbackToday = dateKeyFromMs(now);
+    const hasDeadline = Boolean(input.deadline);
+
     const newTask: Task = {
       id: createId(),
       title: input.title,
       notes: input.notes,
+      cadence: hasDeadline ? input.cadence : "daily",
       priority: input.priority,
-      deadline: input.deadline,
+      deadline: hasDeadline ? input.deadline : fallbackToday,
       completed: false,
       completedAt: undefined,
       timeEntries: [],
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(now).toISOString(),
     };
 
     setTasks((prevTasks) => [newTask, ...prevTasks]);
@@ -254,6 +261,8 @@ export function useTasks(): UseTasksResult {
   );
 
   const updateTask = useCallback((taskId: string, input: UpdateTaskInput) => {
+    const fallbackToday = dateKeyFromMs(Date.now());
+
     setTasks((prevTasks) =>
       prevTasks.map((task) => {
         if (task.id !== taskId) {
@@ -264,12 +273,20 @@ export function useTasks(): UseTasksResult {
         const nextNotes =
           input.notes === undefined ? task.notes : input.notes.trim() ? input.notes.trim() : undefined;
 
+        const nextDeadline =
+          input.deadline !== undefined ? input.deadline || fallbackToday : task.deadline;
+        const nextCadence =
+          input.deadline !== undefined && !input.deadline
+            ? "daily"
+            : input.cadence ?? task.cadence ?? "daily";
+
         return {
           ...task,
           title: nextTitle,
           notes: nextNotes,
+          cadence: nextCadence,
           priority: input.priority ?? task.priority,
-          deadline: input.deadline !== undefined ? input.deadline || undefined : task.deadline,
+          deadline: nextDeadline,
         };
       }),
     );
@@ -312,10 +329,24 @@ export function useTasks(): UseTasksResult {
   );
 
   const dailyHistory = useMemo<DailyHistory[]>(() => {
-    const today = new Date(todayKey);
+    const allKnownDates = tasks.flatMap((task) => [
+      task.createdAt.slice(0, 10),
+      ...(task.completedAt ? [task.completedAt.slice(0, 10)] : []),
+      ...task.timeEntries.map((entry) => entry.date),
+    ]);
 
-    return Array.from({ length: 7 }).map((_, index) => {
-      const current = new Date(today.getTime() - index * ONE_DAY_MS);
+    if (allKnownDates.length === 0) {
+      return [];
+    }
+
+    const startDate = allKnownDates.slice().sort()[0];
+    const startMs = new Date(`${startDate}T00:00:00`).getTime();
+    const todayMs = new Date(`${todayKey}T00:00:00`).getTime();
+
+    const daysCount = Math.floor((todayMs - startMs) / ONE_DAY_MS) + 1;
+
+    return Array.from({ length: daysCount }).map((_, index) => {
+      const current = new Date(todayMs - index * ONE_DAY_MS);
       const date = current.toISOString().slice(0, 10);
 
       const records = tasks

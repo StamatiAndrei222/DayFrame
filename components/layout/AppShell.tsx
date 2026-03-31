@@ -7,7 +7,7 @@ import { TaskList } from "@/components/tasks/TaskList";
 import { TimeHistoryCalendar } from "@/components/tracking/TimeHistoryCalendar";
 import { formatDuration } from "@/lib/time";
 import type { Task } from "@/types/task";
-import type { TaskPriority } from "@/types/task";
+import type { TaskCadence, TaskPriority } from "@/types/task";
 
 type AppShellProps = {
   tasks: Task[];
@@ -15,6 +15,7 @@ type AppShellProps = {
   onAddTask: (input: {
     title: string;
     notes?: string;
+    cadence: TaskCadence;
     priority: TaskPriority;
     deadline?: string;
   }) => void;
@@ -25,6 +26,7 @@ type AppShellProps = {
     input: {
       title?: string;
       notes?: string;
+      cadence?: TaskCadence;
       priority?: TaskPriority;
       deadline?: string;
     },
@@ -140,7 +142,7 @@ export function AppShell({
           description="Mock AI transforms rough goals into clearer actions, execution order, and focused next steps."
           className="[--card-delay:270ms]"
         >
-          <AISuggestionsPanel tasks={tasks} />
+          <AISuggestionsPanel tasks={tasks} onAddTask={onAddTask} />
         </SectionCard>
 
         <SectionCard

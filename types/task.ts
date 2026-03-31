@@ -1,4 +1,5 @@
 export type TaskPriority = "low" | "medium" | "high";
+export type TaskCadence = "daily" | "weekly" | "monthly";
 
 export type TaskTimeEntry = {
   date: string;
@@ -10,6 +11,7 @@ export type Task = {
   title: string;
   notes?: string;
   priority: TaskPriority;
+  cadence: TaskCadence;
   deadline?: string;
   completed: boolean;
   completedAt?: string;

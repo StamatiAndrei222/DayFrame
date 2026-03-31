@@ -26,6 +26,10 @@ function isTaskRecord(value: unknown): value is Task {
     typeof candidate.id === "string" &&
     typeof candidate.title === "string" &&
     (candidate.notes === undefined || typeof candidate.notes === "string") &&
+    (candidate.cadence === undefined ||
+      candidate.cadence === "daily" ||
+      candidate.cadence === "weekly" ||
+      candidate.cadence === "monthly") &&
     (candidate.priority === "low" ||
       candidate.priority === "medium" ||
       candidate.priority === "high") &&
@@ -82,6 +86,7 @@ export function createSeedTasks(): Task[] {
       id: "seed-cv-refresh",
       title: "Refresh CV with 2026 portfolio work",
       notes: "Update project bullets and metrics for each build.",
+      cadence: "daily",
       priority: "high",
       deadline: formatDate(new Date(now.getTime() + oneDayMs)),
       completed: false,
@@ -92,6 +97,7 @@ export function createSeedTasks(): Task[] {
       id: "seed-github-cleanup",
       title: "Clean up top 3 GitHub repos",
       notes: "Improve README and pin strongest projects.",
+      cadence: "weekly",
       priority: "medium",
       deadline: formatDate(new Date(now.getTime() + 2 * oneDayMs)),
       completed: false,
@@ -102,6 +108,7 @@ export function createSeedTasks(): Task[] {
       id: "seed-job-apps",
       title: "Prepare shortlist of 5 junior roles",
       notes: "Collect role links and key requirements.",
+      cadence: "monthly",
       priority: "high",
       deadline: formatDate(now),
       completed: false,

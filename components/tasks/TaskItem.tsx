@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { formatDuration } from "@/lib/time";
 import { cn } from "@/lib/utils";
-import type { Task, TaskPriority } from "@/types/task";
+import type { Task, TaskCadence, TaskPriority } from "@/types/task";
 
 type TaskItemProps = {
   task: Task;
@@ -18,6 +18,7 @@ type TaskItemProps = {
     input: {
       title?: string;
       notes?: string;
+      cadence?: TaskCadence;
       priority?: TaskPriority;
       deadline?: string;
     },
@@ -46,9 +47,11 @@ export function TaskItem({
   onStartTimer,
   onPauseTimer,
 }: TaskItemProps) {
+  const effectiveCadence: TaskCadence = task.cadence ?? "daily";
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(task.title);
   const [notes, setNotes] = useState(task.notes ?? "");
+  const [cadence, setCadence] = useState<TaskCadence>(effectiveCadence);
   const [priority, setPriority] = useState<TaskPriority>(task.priority);
   const [deadline, setDeadline] = useState(task.deadline ?? "");
   const [titleError, setTitleError] = useState<string | null>(null);
@@ -63,6 +66,7 @@ export function TaskItem({
     onUpdate(task.id, {
       title: normalizedTitle,
       notes,
+      cadence,
       priority,
       deadline,
     });
@@ -73,6 +77,7 @@ export function TaskItem({
   const handleCancel = () => {
     setTitle(task.title);
     setNotes(task.notes ?? "");
+    setCadence(effectiveCadence);
     setPriority(task.priority);
     setDeadline(task.deadline ?? "");
     setTitleError(null);
@@ -100,6 +105,14 @@ export function TaskItem({
             placeholder="Optional notes"
           />
           <div className="grid gap-2 sm:grid-cols-2">
+            <Select
+              value={cadence}
+              onChange={(event) => setCadence(event.target.value as TaskCadence)}
+            >
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </Select>
             <Select
               value={priority}
               onChange={(event) => setPriority(event.target.value as TaskPriority)}
@@ -149,6 +162,11 @@ export function TaskItem({
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs text-[--text-secondary]">
+            <span>
+              Category:{" "}
+              <span className="font-medium text-[--text-primary] capitalize">{effectiveCadence}</span>
+            </span>
+            <span className="h-1 w-1 rounded-full bg-slate-300" />
             <span>
               Deadline:{" "}
               <span className="font-medium text-[--text-primary]">
