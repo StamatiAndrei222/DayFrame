@@ -1,9 +1,17 @@
 import { SectionCard } from "@/components/dashboard/SectionCard";
+import { AddTaskForm } from "@/components/tasks/AddTaskForm";
 import type { Task } from "@/types/task";
+import type { TaskPriority } from "@/types/task";
 
 type AppShellProps = {
   tasks: Task[];
   isHydrated: boolean;
+  onAddTask: (input: {
+    title: string;
+    notes?: string;
+    priority: TaskPriority;
+    deadline?: string;
+  }) => void;
   stats: {
     total: number;
     completed: number;
@@ -19,7 +27,7 @@ const priorityStyles: Record<Task["priority"], string> = {
   low: "bg-slate-100 text-slate-700",
 };
 
-export function AppShell({ tasks, isHydrated, stats }: AppShellProps) {
+export function AppShell({ tasks, isHydrated, stats, onAddTask }: AppShellProps) {
   const previewTasks = tasks.slice(0, 3);
 
   return (
@@ -53,7 +61,7 @@ export function AppShell({ tasks, isHydrated, stats }: AppShellProps) {
           eyebrow="Capture"
           description="Task capture flow lands in Phase 3 with title, priority, notes, and deadline inputs."
         >
-          <p className="text-sm text-[--text-secondary]">State layer is ready. UI form is next.</p>
+          <AddTaskForm onAddTask={onAddTask} />
         </SectionCard>
 
         <SectionCard

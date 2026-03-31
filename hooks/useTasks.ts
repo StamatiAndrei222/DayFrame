@@ -1,9 +1,16 @@
 "use client";
 
-import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
+import { type Dispatch, type SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 
 import { createSeedTasks, loadTasks, saveTasks } from "@/lib/storage";
-import type { Task } from "@/types/task";
+import type { Task, TaskPriority } from "@/types/task";
+
+type AddTaskInput = {
+  title: string;
+  notes?: string;
+  priority: TaskPriority;
+  deadline?: string;
+};
 
 type UseTasksResult = {
   tasks: Task[];
@@ -16,6 +23,7 @@ type UseTasksResult = {
     dueToday: number;
   };
   setTasks: Dispatch<SetStateAction<Task[]>>;
+  addTask: (input: AddTaskInput) => void;
 };
 
 const isDueToday = (deadline?: string) => {
@@ -43,12 +51,29 @@ export function useTasks(): UseTasksResult {
   const isHydrated = true;
 
   useEffect(() => {
-    if (!isHydrated) {
-      return;
-    }
-
     saveTasks(tasks);
-  }, [tasks, isHydrated]);
+  }, [tasks]);
+
+  const addTask = useCallback((input: AddTaskInput) => {
+    const createId = () => {
+      if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+        return crypto.randomUUID();
+      }
+      return `task-${Date.now()}`;
+    };
+
+    const newTask: Task = {
+      id: createId(),
+      title: input.title,
+      notes: input.notes,
+      priority: input.priority,
+      deadline: input.deadline,
+      completed: false,
+      createdAt: new Date().toISOString(),
+    };
+
+    setTasks((prevTasks) => [newTask, ...prevTasks]);
+  }, []);
 
   const stats = useMemo(() => {
     const completed = tasks.filter((task) => task.completed).length;
@@ -74,5 +99,6 @@ export function useTasks(): UseTasksResult {
     isHydrated,
     stats,
     setTasks,
+    addTask,
   };
 }
