@@ -51,6 +51,17 @@ npm run dev
 
 Open `http://localhost:3000`.
 
+### OpenAI Setup (Real AI Assistant)
+
+Create a `.env.local` file in the project root:
+
+```bash
+OPENAI_API_KEY=your_api_key_here
+OPENAI_MODEL=gpt-5.2
+```
+
+If `OPENAI_API_KEY` is missing or a request fails, Dayframe automatically falls back to local mock planning suggestions.
+
 ## Quality Checks
 
 ```bash

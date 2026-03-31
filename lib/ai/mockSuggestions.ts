@@ -1,18 +1,6 @@
 import type { Task } from "@/types/task";
 import type { TaskCadence, TaskPriority } from "@/types/task";
-
-export type SuggestionCard = {
-  title: string;
-  body: string;
-};
-
-export type SuggestedTaskDraft = {
-  title: string;
-  notes: string;
-  cadence: TaskCadence;
-  priority: TaskPriority;
-  deadline?: string;
-};
+import type { SuggestionCard, SuggestedTaskDraft } from "@/lib/ai/types";
 
 const SPLIT_PATTERN = /[,.;]+|\band\b/gi;
 

@@ -5,11 +5,8 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import {
-  generateSuggestedTasks,
-  generateSuggestionCards,
-  type SuggestedTaskDraft,
-} from "@/lib/ai/mockSuggestions";
+import { generateSuggestionCards, generateSuggestedTasks } from "@/lib/ai/mockSuggestions";
+import type { AISuggestionsResponse, SuggestedTaskDraft, SuggestionCard } from "@/lib/ai/types";
 import type { Task, TaskCadence, TaskPriority } from "@/types/task";
 
 type AISuggestionsPanelProps = {
@@ -28,21 +25,27 @@ type UiSuggestionDraft = SuggestedTaskDraft & { id: string };
 const DEFAULT_PROMPT =
   "I need to make my CV, clean my GitHub, work on my portfolio project, and apply for jobs.";
 
+function toUiDrafts(drafts: SuggestedTaskDraft[]): UiSuggestionDraft[] {
+  return drafts.map((draft, index) => ({
+    ...draft,
+    id: `ai-draft-${index}`,
+  }));
+}
+
 export function AISuggestionsPanel({ tasks, onAddTask }: AISuggestionsPanelProps) {
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const [submittedPrompt, setSubmittedPrompt] = useState(DEFAULT_PROMPT);
   const [addedDraftIds, setAddedDraftIds] = useState<string[]>([]);
   const [editableDrafts, setEditableDrafts] = useState<UiSuggestionDraft[]>(
-    generateSuggestedTasks(DEFAULT_PROMPT).map((draft, index) => ({
-      ...draft,
-      id: `ai-draft-${index}`,
-    })),
+    toUiDrafts(generateSuggestedTasks(DEFAULT_PROMPT)),
   );
+  const [cards, setCards] = useState<SuggestionCard[]>(
+    generateSuggestionCards(DEFAULT_PROMPT, tasks),
+  );
+  const [source, setSource] = useState<"openai" | "mock">("mock");
+  const [notice, setNotice] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const cards = useMemo(
-    () => generateSuggestionCards(submittedPrompt, tasks),
-    [submittedPrompt, tasks],
-  );
   const normalizedExistingTitles = useMemo(
     () =>
       new Set(
@@ -56,23 +59,48 @@ export function AISuggestionsPanel({ tasks, onAddTask }: AISuggestionsPanelProps
     [tasks],
   );
 
-  const handleGenerate = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const nextPrompt = prompt.trim() || DEFAULT_PROMPT;
-    setSubmittedPrompt(nextPrompt);
-    const nextDrafts = generateSuggestedTasks(nextPrompt).map((draft, index) => ({
-      ...draft,
-      id: `ai-draft-${index}`,
-    }));
-    setEditableDrafts(nextDrafts);
-    setAddedDraftIds([]);
-  };
-
   const normalizeTitle = (title: string) =>
     title
       .trim()
       .toLowerCase()
       .replace(/\s+/g, " ");
+
+  const handleGenerate = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const nextPrompt = prompt.trim() || DEFAULT_PROMPT;
+    setSubmittedPrompt(nextPrompt);
+    setAddedDraftIds([]);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/ai/suggestions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: nextPrompt, tasks }),
+      });
+
+      const payload = (await response.json()) as AISuggestionsResponse;
+
+      if (!response.ok) {
+        throw new Error("AI request failed");
+      }
+
+      setCards(payload.cards);
+      setEditableDrafts(toUiDrafts(payload.suggestedTasks));
+      setSource(payload.source);
+      setNotice(payload.notice ?? null);
+    } catch {
+      setCards(generateSuggestionCards(nextPrompt, tasks));
+      setEditableDrafts(toUiDrafts(generateSuggestedTasks(nextPrompt)));
+      setSource("mock");
+      setNotice("Could not reach OpenAI. Showing local suggestions.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const updateDraft = <K extends keyof SuggestedTaskDraft>(
     draftId: string,
@@ -134,9 +162,15 @@ export function AISuggestionsPanel({ tasks, onAddTask }: AISuggestionsPanelProps
           onChange={(event) => setPrompt(event.target.value)}
           placeholder="Type a rough list of goals..."
         />
-        <Button className="w-full sm:w-auto" type="submit">
-          Generate Suggestions
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button className="w-full sm:w-auto" type="submit" disabled={isLoading}>
+            {isLoading ? "Generating..." : "Generate Suggestions"}
+          </Button>
+          <p className="text-[11px] text-[--text-secondary]">
+            Source: <span className="font-medium text-[--text-primary]">{source.toUpperCase()}</span>
+          </p>
+        </div>
+        {notice ? <p className="text-xs text-[--text-secondary]">{notice}</p> : null}
       </form>
 
       <div className="space-y-2">
@@ -230,6 +264,10 @@ export function AISuggestionsPanel({ tasks, onAddTask }: AISuggestionsPanelProps
           </article>
         ))}
       </div>
+
+      <p className="text-[11px] text-[--text-secondary]">
+        Prompt used: <span className="font-medium text-[--text-primary]">{submittedPrompt}</span>
+      </p>
     </div>
   );
 }
