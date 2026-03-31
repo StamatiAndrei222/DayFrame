@@ -1,42 +1,32 @@
 import { SectionCard } from "@/components/dashboard/SectionCard";
+import type { Task } from "@/types/task";
 
 type AppShellProps = {
-  children?: React.ReactNode;
+  tasks: Task[];
+  isHydrated: boolean;
+  stats: {
+    total: number;
+    completed: number;
+    pending: number;
+    highPriority: number;
+    dueToday: number;
+  };
 };
 
-const sections = [
-  {
-    title: "Add Task",
-    eyebrow: "Capture",
-    description:
-      "Turn raw thoughts into trackable tasks with clean inputs for priority, deadlines, and context.",
-  },
-  {
-    title: "Task List",
-    eyebrow: "Organize",
-    description:
-      "See everything in one calm workspace designed for clarity, focus, and confident execution.",
-  },
-  {
-    title: "Today Plan",
-    eyebrow: "Focus",
-    description:
-      "Get a streamlined daily plan that reduces decision fatigue and keeps your momentum high.",
-  },
-  {
-    title: "AI Suggestions",
-    eyebrow: "Assist",
-    description:
-      "Receive practical guidance to prioritize, break down goals, and choose the best next action.",
-  },
-];
+const priorityStyles: Record<Task["priority"], string> = {
+  high: "bg-rose-100 text-rose-700",
+  medium: "bg-amber-100 text-amber-700",
+  low: "bg-slate-100 text-slate-700",
+};
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ tasks, isHydrated, stats }: AppShellProps) {
+  const previewTasks = tasks.slice(0, 3);
+
   return (
     <div className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col px-5 py-8 sm:px-8 sm:py-12 lg:px-12 lg:py-16">
       <header className="max-w-3xl space-y-5">
         <p className="inline-flex items-center rounded-full border border-[--card-border] bg-[--card] px-3 py-1 text-xs font-medium tracking-wide text-[--muted] shadow-[var(--shadow-soft)]">
-          Dayframe v1
+          Dayframe v1 • Local-first MVP
         </p>
         <div className="space-y-3">
           <h1 className="text-pretty text-3xl font-semibold tracking-tight text-[--text-primary] sm:text-4xl lg:text-5xl">
@@ -47,15 +37,82 @@ export function AppShell({ children }: AppShellProps) {
             and clear suggestions for what to do next.
           </p>
         </div>
+        <div className="flex flex-wrap gap-2">
+          <p className="rounded-full border border-[--card-border] bg-[--card] px-3 py-1 text-xs text-[--text-secondary]">
+            {isHydrated ? "Synced from localStorage" : "Loading local workspace..."}
+          </p>
+          <p className="rounded-full border border-[--card-border] bg-[--card] px-3 py-1 text-xs text-[--text-secondary]">
+            {stats.total} tasks total
+          </p>
+        </div>
       </header>
 
       <main className="mt-10 grid gap-5 md:grid-cols-2">
-        {sections.map((section) => (
-          <SectionCard key={section.title} {...section} />
-        ))}
-      </main>
+        <SectionCard
+          title="Add Task"
+          eyebrow="Capture"
+          description="Task capture flow lands in Phase 3 with title, priority, notes, and deadline inputs."
+        >
+          <p className="text-sm text-[--text-secondary]">State layer is ready. UI form is next.</p>
+        </SectionCard>
 
-      {children ? <div className="mt-8">{children}</div> : null}
+        <SectionCard
+          title="Task List"
+          eyebrow="Organize"
+          description="Persisted tasks preview from local storage to confirm reliable local-first data flow."
+        >
+          {previewTasks.length === 0 ? (
+            <p className="text-sm text-[--text-secondary]">No tasks yet.</p>
+          ) : (
+            <ul className="space-y-2">
+              {previewTasks.map((task) => (
+                <li
+                  key={task.id}
+                  className="flex items-center justify-between rounded-2xl border border-[--card-border] bg-white/70 px-3 py-2"
+                >
+                  <p className="pr-3 text-sm text-[--text-primary]">{task.title}</p>
+                  <span
+                    className={`rounded-full px-2 py-1 text-[11px] font-semibold uppercase tracking-wide ${priorityStyles[task.priority]}`}
+                  >
+                    {task.priority}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </SectionCard>
+
+        <SectionCard
+          title="Today Plan"
+          eyebrow="Focus"
+          description="Rule-based planning arrives in Phase 5. Current stats already track today-critical workload."
+        >
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <p className="rounded-2xl border border-[--card-border] bg-white/70 px-3 py-2 text-[--text-secondary]">
+              Pending: <span className="font-semibold text-[--text-primary]">{stats.pending}</span>
+            </p>
+            <p className="rounded-2xl border border-[--card-border] bg-white/70 px-3 py-2 text-[--text-secondary]">
+              Due today: <span className="font-semibold text-[--text-primary]">{stats.dueToday}</span>
+            </p>
+            <p className="rounded-2xl border border-[--card-border] bg-white/70 px-3 py-2 text-[--text-secondary]">
+              High priority: <span className="font-semibold text-[--text-primary]">{stats.highPriority}</span>
+            </p>
+            <p className="rounded-2xl border border-[--card-border] bg-white/70 px-3 py-2 text-[--text-secondary]">
+              Completed: <span className="font-semibold text-[--text-primary]">{stats.completed}</span>
+            </p>
+          </div>
+        </SectionCard>
+
+        <SectionCard
+          title="AI Suggestions"
+          eyebrow="Assist"
+          description="Mock AI behaviors in Phase 6 will convert vague goals into clear, prioritized action steps."
+        >
+          <p className="text-sm text-[--text-secondary]">
+            Planned prompts: break into steps, prioritize tasks, suggest first action, rewrite vague goals.
+          </p>
+        </SectionCard>
+      </main>
     </div>
   );
 }
