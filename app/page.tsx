@@ -13,14 +13,15 @@ export default function Home() {
     deleteTask,
     updateTask,
     activeTimerTaskId,
+    focusTaskIdsToday,
+    focusTasksToday,
     startTaskTimer,
     pauseTaskTimer,
     getTaskTodaySeconds,
     getTaskTotalSeconds,
     dailyHistory,
-    focusTask,
-    focusTaskTodaySeconds,
     focusProgress,
+    focusSummary,
   } = useTasks();
 
   return (
@@ -33,14 +34,15 @@ export default function Home() {
       onDeleteTask={deleteTask}
       onUpdateTask={updateTask}
       activeTimerTaskId={activeTimerTaskId}
+      focusTaskIdsToday={focusTaskIdsToday}
+      focusTasksToday={focusTasksToday}
       onStartTaskTimer={startTaskTimer}
       onPauseTaskTimer={pauseTaskTimer}
       getTaskTodaySeconds={getTaskTodaySeconds}
       getTaskTotalSeconds={getTaskTotalSeconds}
       dailyHistory={dailyHistory}
-      focusTask={focusTask}
-      focusTaskTodaySeconds={focusTaskTodaySeconds}
       focusProgress={focusProgress}
+      focusSummary={focusSummary}
     />
   );
 }

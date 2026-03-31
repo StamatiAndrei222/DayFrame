@@ -21,6 +21,7 @@ type TaskListProps = {
     },
   ) => void;
   activeTimerTaskId: string | null;
+  focusTaskIdsToday: string[];
   getTaskTodaySeconds: (taskId: string) => number;
   getTaskTotalSeconds: (taskId: string) => number;
   onStartTimer: (taskId: string) => void;
@@ -33,6 +34,7 @@ export function TaskList({
   onDelete,
   onUpdate,
   activeTimerTaskId,
+  focusTaskIdsToday,
   getTaskTodaySeconds,
   getTaskTotalSeconds,
   onStartTimer,
@@ -46,8 +48,20 @@ export function TaskList({
   const [activeTab, setActiveTab] = useState<TaskCadence>("daily");
 
   const tabTasks = useMemo(
-    () => tasks.filter((task) => (task.cadence ?? "daily") === activeTab),
-    [tasks, activeTab],
+    () =>
+      tasks.filter((task) => {
+        const inActiveTab = (task.cadence ?? "daily") === activeTab;
+        if (!inActiveTab) {
+          return false;
+        }
+
+        if (activeTab === "daily") {
+          return !focusTaskIdsToday.includes(task.id);
+        }
+
+        return true;
+      }),
+    [tasks, activeTab, focusTaskIdsToday],
   );
 
   const activeLabel = tabs.find((tab) => tab.cadence === activeTab)?.label ?? "Tasks";

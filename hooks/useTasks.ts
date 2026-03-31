@@ -40,6 +40,11 @@ export type FocusProgress = {
   percent: number;
 };
 
+export type FocusSummary = {
+  totalTrackedSeconds: number;
+  activeCount: number;
+};
+
 type UseTasksResult = {
   tasks: Task[];
   isHydrated: boolean;
@@ -62,9 +67,10 @@ type UseTasksResult = {
   getTaskTodaySeconds: (taskId: string) => number;
   getTaskTotalSeconds: (taskId: string) => number;
   dailyHistory: DailyHistory[];
-  focusTask: Task | null;
-  focusTaskTodaySeconds: number;
+  focusTasksToday: Task[];
+  focusTaskIdsToday: string[];
   focusProgress: FocusProgress;
+  focusSummary: FocusSummary;
 };
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
@@ -337,19 +343,30 @@ export function useTasks(): UseTasksResult {
     [tasks],
   );
 
-  const focusTask = useMemo(() => {
-    if (!activeTimer) {
-      return null;
-    }
-    return tasks.find((task) => task.id === activeTimer.taskId) ?? null;
-  }, [tasks, activeTimer]);
+  const focusTasksToday = useMemo(() => {
+    return tasks
+      .filter((task) => {
+        if (task.completed) {
+          return false;
+        }
+        const startedToday = task.timeEntries.some((entry) => entry.date === todayKey && entry.seconds > 0);
+        const activeNow = activeTimer?.taskId === task.id;
+        return startedToday || activeNow;
+      })
+      .sort((a, b) => {
+        const aActive = activeTimer?.taskId === a.id ? 1 : 0;
+        const bActive = activeTimer?.taskId === b.id ? 1 : 0;
+        if (aActive !== bActive) {
+          return bActive - aActive;
+        }
+        return a.createdAt.localeCompare(b.createdAt);
+      });
+  }, [tasks, todayKey, activeTimer]);
 
-  const focusTaskTodaySeconds = useMemo(() => {
-    if (!focusTask) {
-      return 0;
-    }
-    return taskTodaySecondsMap.get(focusTask.id) ?? 0;
-  }, [focusTask, taskTodaySecondsMap]);
+  const focusTaskIdsToday = useMemo(
+    () => focusTasksToday.map((task) => task.id),
+    [focusTasksToday],
+  );
 
   const focusProgress = useMemo<FocusProgress>(() => {
     const startedIds = new Set<string>();
@@ -376,6 +393,19 @@ export function useTasks(): UseTasksResult {
       percent,
     };
   }, [tasks, todayKey, activeTimer]);
+
+  const focusSummary = useMemo<FocusSummary>(() => {
+    const totalTrackedSeconds = focusTasksToday.reduce(
+      (sum, task) => sum + (taskTodaySecondsMap.get(task.id) ?? 0),
+      0,
+    );
+    const activeCount = activeTimer ? 1 : 0;
+
+    return {
+      totalTrackedSeconds,
+      activeCount,
+    };
+  }, [focusTasksToday, taskTodaySecondsMap, activeTimer]);
 
   const dailyHistory = useMemo<DailyHistory[]>(() => {
     const allKnownDates = tasks.flatMap((task) => [
@@ -467,8 +497,9 @@ export function useTasks(): UseTasksResult {
     getTaskTodaySeconds,
     getTaskTotalSeconds,
     dailyHistory,
-    focusTask,
-    focusTaskTodaySeconds,
+    focusTasksToday,
+    focusTaskIdsToday,
     focusProgress,
+    focusSummary,
   };
 }
