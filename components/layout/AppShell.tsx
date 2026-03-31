@@ -1,3 +1,4 @@
+import { AISuggestionsPanel } from "@/components/ai/AISuggestionsPanel";
 import { SectionCard } from "@/components/dashboard/SectionCard";
 import { TodayPlan } from "@/components/planner/TodayPlan";
 import { AddTaskForm } from "@/components/tasks/AddTaskForm";
@@ -109,11 +110,9 @@ export function AppShell({
         <SectionCard
           title="AI Suggestions"
           eyebrow="Assist"
-          description="Mock AI behaviors in Phase 6 will convert vague goals into clear, prioritized action steps."
+          description="Mock AI transforms rough goals into clearer actions, execution order, and focused next steps."
         >
-          <p className="text-sm text-[--text-secondary]">
-            Planned prompts: break into steps, prioritize tasks, suggest first action, rewrite vague goals.
-          </p>
+          <AISuggestionsPanel tasks={tasks} />
         </SectionCard>
       </main>
     </div>
