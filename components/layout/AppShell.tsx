@@ -1,4 +1,5 @@
 import { SectionCard } from "@/components/dashboard/SectionCard";
+import { TodayPlan } from "@/components/planner/TodayPlan";
 import { AddTaskForm } from "@/components/tasks/AddTaskForm";
 import { TaskList } from "@/components/tasks/TaskList";
 import type { Task } from "@/types/task";
@@ -92,20 +93,15 @@ export function AppShell({
         <SectionCard
           title="Today Plan"
           eyebrow="Focus"
-          description="Rule-based planning arrives in Phase 5. Current stats already track today-critical workload."
+          description="Rule-based planning ranks pending tasks by priority and deadline so you can start immediately."
         >
-          <div className="grid grid-cols-2 gap-2 text-sm">
+          <TodayPlan tasks={tasks} />
+          <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
             <p className="rounded-2xl border border-[--card-border] bg-white/70 px-3 py-2 text-[--text-secondary]">
               Pending: <span className="font-semibold text-[--text-primary]">{stats.pending}</span>
             </p>
             <p className="rounded-2xl border border-[--card-border] bg-white/70 px-3 py-2 text-[--text-secondary]">
               Due today: <span className="font-semibold text-[--text-primary]">{stats.dueToday}</span>
-            </p>
-            <p className="rounded-2xl border border-[--card-border] bg-white/70 px-3 py-2 text-[--text-secondary]">
-              High priority: <span className="font-semibold text-[--text-primary]">{stats.highPriority}</span>
-            </p>
-            <p className="rounded-2xl border border-[--card-border] bg-white/70 px-3 py-2 text-[--text-secondary]">
-              Completed: <span className="font-semibold text-[--text-primary]">{stats.completed}</span>
             </p>
           </div>
         </SectionCard>
