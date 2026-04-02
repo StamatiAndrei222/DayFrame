@@ -33,6 +33,11 @@ const TEMPLATES = [
   "Balance day: study 2h, coding practice, and outreach.",
 ];
 
+function getTemplateLabel(template: string): string {
+  const [label] = template.split(":");
+  return label?.trim() || "Template";
+}
+
 function toUiDrafts(drafts: SuggestedTaskDraft[]): UiSuggestionDraft[] {
   return drafts.map((draft, index) => ({
     ...draft,
@@ -191,9 +196,10 @@ export function AISuggestionsPanel({ tasks, onAddTask }: AISuggestionsPanelProps
               key={template}
               type="button"
               onClick={() => setPrompt(template)}
+              title={template}
               className="rounded-full border border-[--card-border] bg-white px-2.5 py-1 text-[11px] text-[--text-secondary] hover:bg-slate-50"
             >
-              Use template
+              {getTemplateLabel(template)}
             </button>
           ))}
         </div>
@@ -213,6 +219,12 @@ export function AISuggestionsPanel({ tasks, onAddTask }: AISuggestionsPanelProps
           </p>
         </div>
         {notice ? <p className="text-xs text-[--text-secondary]">{notice}</p> : null}
+        {source === "mock" && notice?.includes("OPENAI_API_KEY") ? (
+          <p className="text-xs text-[--text-secondary]">
+            Add <code>OPENAI_API_KEY</code> to <code>.env.local</code> and restart <code>npm run dev</code> to enable
+            real OpenAI suggestions.
+          </p>
+        ) : null}
       </form>
 
       <div className="inline-flex w-full rounded-xl border border-[--card-border] bg-white/60 p-1 sm:w-auto">

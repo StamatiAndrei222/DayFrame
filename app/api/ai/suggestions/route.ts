@@ -81,6 +81,22 @@ function fallbackResponse(prompt: string, tasks: Task[], notice?: string): AISug
   };
 }
 
+function getOpenAIErrorNotice(error: unknown): string {
+  if (error && typeof error === "object") {
+    const candidate = error as { status?: number; code?: string; message?: string };
+    const statusText = typeof candidate.status === "number" ? `status ${candidate.status}` : "request error";
+    const codeText = typeof candidate.code === "string" ? candidate.code : "unknown";
+    const messageText = typeof candidate.message === "string" ? candidate.message : "No details available.";
+    return `OpenAI request failed (${statusText}, code: ${codeText}). ${messageText}`;
+  }
+
+  if (error instanceof Error) {
+    return `OpenAI request failed. ${error.message}`;
+  }
+
+  return "OpenAI request failed. Showing local planning suggestions.";
+}
+
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as
     | { prompt?: string; tasks?: Task[] }
@@ -93,8 +109,14 @@ export async function POST(request: Request) {
     return NextResponse.json(fallbackResponse("", tasks, "Missing prompt, used local planner."));
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  const isPlaceholderKey =
+    !apiKey ||
+    apiKey === "your_api_key_here" ||
+    apiKey === "paste_your_openai_api_key_here" ||
+    apiKey.toLowerCase().includes("your_api_key");
+
+  if (isPlaceholderKey) {
     return NextResponse.json(
       fallbackResponse(prompt, tasks, "OPENAI_API_KEY is missing. Showing local planning suggestions."),
     );
@@ -157,9 +179,9 @@ export async function POST(request: Request) {
       suggestedTasks,
       source: "openai",
     } satisfies AISuggestionsResponse);
-  } catch {
+  } catch (error) {
     return NextResponse.json(
-      fallbackResponse(prompt, tasks, "OpenAI request failed. Showing local planning suggestions."),
+      fallbackResponse(prompt, tasks, getOpenAIErrorNotice(error)),
     );
   }
 }

@@ -1,83 +1,95 @@
 # Dayframe
 
-Dayframe is a modern AI Productivity Assistant built with Next.js and TypeScript.
-It helps users turn messy thoughts into a clean daily execution plan using local-first task management, priority/deadline planning, and mock AI assistance.
+Dayframe este o aplicație web modernă de productivitate, concepută ca un proiect solid pentru portofoliu.  
+Scopul ei este să ajute utilizatorul să transforme idei și obiective haotice în planuri clare de acțiune, să lucreze concentrat și să își urmărească progresul în timp.
 
-## Why This Project
+## Preview
 
-Most todo apps stop at storing tasks. Dayframe focuses on decision support:
-- Capture rough goals quickly
-- Prioritize with urgency and importance
-- Generate a focused "Today Plan"
-- Convert vague input into actionable steps
+![Dayframe preview](./public/image.png)
 
-This project is designed as a portfolio-ready product for junior frontend/full-stack roles and freelance demos.
+## Prezentare generală
 
-## Current MVP Features
+Dayframe a fost gândită ca o aplicație de productivitate cu un design calm, curat și premium, orientată pe utilizare practică.  
+Aplicația combină managementul taskurilor, focus-ul zilnic, istoricul timpului lucrat și un modul de asistență AI pentru planificare.
 
-- Dashboard with a calm, premium, responsive interface
-- Add Task flow with validation
-- Task List with edit, delete, and completion state
-- Priority levels and deadline support
-- Rule-based Today Plan ranking
-- Mock AI Suggestions panel:
-  - Rewrite goal
-  - Break into steps
-  - Suggest first action
-  - Prioritize active tasks
-- Local state + localStorage persistence
+Este potrivită pentru:
+- organizarea taskurilor personale
+- structurarea zilei de lucru
+- lucru concentrat pe obiective importante
+- demonstrarea unui produs web modern în portofoliu
 
-## Tech Stack
+## Funcționalități principale
 
-- Next.js (App Router)
-- React
-- TypeScript
-- Tailwind CSS
+### Workspace
+- Adăugarea taskurilor cu:
+  - titlu
+  - notițe opționale
+  - categorie / recurență: daily, weekly, monthly
+  - prioritate
+  - deadline
+- Dacă deadline-ul nu este completat:
+  - taskul este considerat automat `daily`
+  - deadline-ul este setat implicit pe ziua curentă
+- Afișarea taskurilor pe taburi:
+  - daily
+  - weekly
+  - monthly
+- Control complet asupra taskurilor:
+  - start / pause timer
+  - editare
+  - marcare ca finalizat / nefinalizat
+  - ștergere
 
-## Project Structure
+### Focus
+- Afișează taskurile începute în ziua curentă ca listă activă de focus
+- Separă taskurile aflate în lucru de lista zilnică normală
+- Fiecare task păstrează controalele complete:
+  - start / pause
+  - edit
+  - done
+  - delete
+- Include statistici pentru ziua curentă:
+  - progres
+  - timp total de focus
+  - numărul de timere active
 
-- `app/` - App Router pages, layout, global styles
-- `components/` - Reusable UI and feature components (`tasks`, `planner`, `ai`, `layout`)
-- `hooks/` - Client-side state hooks (`useTasks`)
-- `lib/` - Pure logic and helpers (`planner`, `storage`, `ai/mockSuggestions`)
-- `types/` - Shared domain models (`Task`)
+### Daily History
+- Păstrează istoricul activității începând cu prima zi reală de utilizare a aplicației
+- Afișează vizual timpul lucrat pe fiecare zi
+- Pentru fiecare task sunt afișate:
+  - durata urmărită
+  - bara relativă în raport cu totalul zilei
+  - indicator de finalizare
 
-## Getting Started
+### Assist (AI)
+- Oferă sugestii prin endpoint-ul `POST /api/ai/suggestions`
+- Folosește integrare reală cu OpenAI atunci când este disponibilă
+- Revine automat la sugestii mock locale dacă API-ul nu este disponibil
+- Include:
+  - modul `Quick Plan`
+  - modul `Task Builder`
+  - indicator al sursei (`OpenAI` sau `Mock fallback`)
+  - loading state
+  - template-uri de prompt
+  - deduplicare față de taskurile deja existente
+  - adăugare individuală
+  - adăugare în masă a taskurilor noi
+  - posibilitatea de a edita categoria, prioritatea și deadline-ul înainte de adăugare
+
+## Tehnologii utilizate
+
+- **Framework:** Next.js (App Router)
+- **Limbaj:** TypeScript
+- **UI:** React + Tailwind CSS
+- **State management:** local React state prin hook-uri custom
+- **Persistență:** browser `localStorage`
+- **AI:** integrare OpenAI cu fallback local mock
+
+## Structura proiectului
 
 ```bash
-npm install
-npm run dev
-```
-
-Open `http://localhost:3000`.
-
-### OpenAI Setup (Real AI Assistant)
-
-Create a `.env.local` file in the project root:
-
-```bash
-OPENAI_API_KEY=your_api_key_here
-OPENAI_MODEL=gpt-5.2
-```
-
-If `OPENAI_API_KEY` is missing or a request fails, Dayframe automatically falls back to local mock planning suggestions.
-
-## Quality Checks
-
-```bash
-npm run lint
-npm run build
-```
-
-## Product Notes
-
-- MVP is intentionally local-first (no authentication yet).
-- AI is mocked with deterministic logic to validate UX before real API integration.
-- Architecture separates UI, data state, and assistant logic for clean iteration.
-
-## Next Steps
-
-- Real AI integration for suggestions and planning
-- Optional auth + cloud sync
-- Better analytics around completion and focus quality
-- Drag-and-drop ordering and richer task grouping
+app/           # rute, layout, API routes, global styles
+components/    # componente UI și module funcționale
+hooks/         # logică locală și management de stare
+lib/           # utilitare, storage, timp, AI helpers
+types/         # tipuri și modele de domeniu
